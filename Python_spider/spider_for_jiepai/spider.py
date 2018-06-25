@@ -63,7 +63,7 @@ def page_detail_parse(html, url):
     title = soup.select('title')[0].get_text()
     print(title)
     '''
-    images_pattern = re.compile('gallery: JSON.parse\("(.*?)"\)', re.S)
+    images_pattern = re.compile('gallery: JSON.parse\("(.*?|\n)"\)', re.S)
     result = re.search(images_pattern, html)
     if result:
         data = json.loads(result.group(1))
