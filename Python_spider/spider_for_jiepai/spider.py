@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import ErrorInResponseException
 # import demjson
 import requests
 import json
@@ -42,11 +43,13 @@ def get_page_detail(url):
     try:
         browser.get(url)
         return browser.page_source
+    except ErrorInResponseException:
+        print('url response error')
     finally:
         browser.close()    
     '''
     headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-    AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36'}
+    AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.87 Safari/537.36'}
     try:
         response = requests.get(url, headers = headers)
         if response.status_code == 200:
@@ -63,7 +66,7 @@ def page_detail_parse(html, url):
     title = soup.select('title')[0].get_text()
     print(title)
     '''
-    images_pattern = re.compile('gallery: JSON.parse\("(.*?|\n)"\)', re.S)
+    images_pattern = re.compile(r'gallery: JSON.parse\("(.*?|\n)"\)', re.S)
     result = re.search(images_pattern, html)
     if result:
         data = json.loads(result.group(1))
@@ -95,6 +98,7 @@ def main():
     for url in parse_page_index(html):
         if url:
             html = get_page_detail(url)
+            print(html)
             if html:
                 result = page_detail_parse(html, url)
                 print(result)
