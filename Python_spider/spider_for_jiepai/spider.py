@@ -7,10 +7,15 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import ErrorInResponseException
+from config import *
 # import demjson
 import requests
 import json
 import re
+import pymongo
+
+client = pymongo.MongoClient(MONGO_URL)
+db = client[MONGO_DB]
 
 def get_page_index(offset, keyword):
     data = {
@@ -66,7 +71,7 @@ def page_detail_parse(html, url):
     title = soup.select('title')[0].get_text()
     print(title)
     '''
-    images_pattern = re.compile(r'gallery: JSON.parse\("(.*?|\n)"\)', re.S)
+    images_pattern = re.compile(r'gallery: JSON.parse\("(.*?)"\)', re.S)
     result = re.search(images_pattern, html)
     if result:
         data = json.loads(result.group(1))
@@ -93,15 +98,22 @@ def page_detail_parse(html, url):
                 'image': data
                 }
 
+def save_to_mongo(result):
+    if db[MONGO_TABLE].insert(result):
+        print('Successfully save to mongodb', result)
+        return None
+    return False
+
 def main():
     html = get_page_index(0, '街拍')
     for url in parse_page_index(html):
         if url:
             html = get_page_detail(url)
-            print(html)
+            # print(html)
             if html:
                 result = page_detail_parse(html, url)
-                print(result)
+                # print(result)
+                save_to_mongo(result)
 
 if __name__ == '__main__':
     main()
