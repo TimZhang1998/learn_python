@@ -6,6 +6,7 @@ from selenium.common.exceptions import ErrorInResponseException
 from config import *
 from hashlib import md5
 from multiprocessing import Pool
+from json.decoder import JSONDecodeError
 # import demjson
 import requests
 import json
@@ -39,10 +40,13 @@ def get_page_index(offset, keyword):
         return None
 
 def parse_page_index(html):
+    # try:
     data = json.loads(html)
     if data and 'data' in data.keys():
         for item in data.get('data'):
             yield item.get('article_url')
+    # except JSONDecodeError:
+        # pass
 
 def get_page_detail(url):
     browser = webdriver.Chrome()
